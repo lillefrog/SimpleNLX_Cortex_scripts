@@ -1,2 +1,2 @@
-This directory contains scripts that are used for reading or analyzing data stored in Neuralynx or Cortex files. The scripts are not made to be general use but they can be very usefull as a starting point for future projects. Each script sould be in its own subfolder and have a short description in the start of the file.
+This directory contains scripts that are used for reading or analyzing data stored in Neuralynx or Cortex files. The scripts are not made to be general use but they can be very useful as a starting point for future projects. Each script sould be in its own subfolder and have a short description in the start of the file.
 If there are any cortex programs used to record the data they should be included in the folder.
