@@ -8,7 +8,7 @@
 % Christian Brandt 04/06-2014
 
 % Add my basic NLX functions to the search path
-addpath(genpath('H:\GitHub\NeuralynxAnalysis\'));
+addpath(genpath('E:\doc\GitHub\NeuralynxAnalysis\'));
 
 
 
@@ -44,7 +44,6 @@ timeBins = 0.4:0.001:1.0;
 displayLimits = [0.4,1.5];
 monitorName = 'CRT monitor Top Left';
 
-
 %% monitor setup 2
 FName = 'E:\CRT Bottom Right 2014-06-04_18-47-30\Events.Nev';
 FName2 = 'E:\CRT Bottom Right 2014-06-04_18-47-30\LFP1.ncs';
@@ -59,37 +58,38 @@ monitorName = 'CRT monitor Bottom Right';
 StartEvent = 255;
 StopEvent = 254;
 
-[DividedEventfile] = NLX_DivideEventfile(AutomaticEvents,StartEvent,StopEvent);
+[dividedEventfile] = NLX_DivideEventfile(AutomaticEvents,StartEvent,StopEvent);
 
-[SampleArray,SampleRate] = NLX_CutCSCFile(FName2);
+[SampleArray,SampleRate] = NLX_ReadCSCFile(FName2);
 
-[dividedSampleArray] = NLX_divideCSCArray(SampleArray,DividedEventfile);
+[dividedSampleArray] = NLX_DivideCSCArray(SampleArray,dividedEventfile);
 
 
 %% Analyze time delay in monitor
 
+STIM_ON = 50;
 % initialize
-delay = zeros( length(DividedEventfile) * 50 ,1 ); 
-z=1;
+delay = zeros( length(dividedEventfile) * 50 ,1 ); 
+EventCount=1; 
 % Loop trough all trials and all events in each trial
-for TRIAL = 1:length(DividedEventfile)
-  event50 = (DividedEventfile{TRIAL}(:,2) == 50);
-  event50TimeStamps = DividedEventfile{TRIAL}(event50,1);
+for TRIAL = 1:length(dividedEventfile)
+  stimOnEvents = (dividedEventfile{TRIAL}(:,2) == STIM_ON);
+  stimOnEventsTime = dividedEventfile{TRIAL}(stimOnEvents,1);
   sampleArray = dividedSampleArray{TRIAL};
-  for EVENT = 1:length(event50TimeStamps)
-    startTime = event50TimeStamps(EVENT);
+  for EVENT = 1:length(stimOnEventsTime)
+    startTime = stimOnEventsTime(EVENT);
     stopTime = startTime + 100000;
     withinTime = (sampleArray(:,1)>startTime) & (sampleArray(:,1)<stopTime);
     samplesOfInterest = sampleArray(withinTime,:);
     IsAboveTreshold = (samplesOfInterest(:,2)<THRESHOLD);
     index = find( IsAboveTreshold ,1, 'first' );
     CrossingTime = samplesOfInterest(index,1);
-    delay(z) = CrossingTime - startTime;
-    z = z + 1;
+    delay(EventCount) = CrossingTime - startTime;
+    EventCount = EventCount + 1;
   end
 end
 
-delay = delay(1:z-1); % remove the values we over initialized
+delay = delay(1:EventCount-1); % remove the values we over initialized
 delayMs = delay/1000; % Original time is in yS 
 
 %% display the delay data
@@ -107,17 +107,21 @@ xlim(displayLimits);
 
 
 %% display a part of the real data
-splitCSCArray = dividedSampleArray;
 
-figure
-i=3;
-startTime = min(DividedEventfile{i}(:,1));
-plot(splitCSCArray{i}(:,1)-startTime,splitCSCArray{i}(:,2));
+i=3; % select a trial to plot
+
+STIM_ON = 50;
+figure % create a new figure to avoid overwriting the old one
+
+startTime = min(dividedEventfile{i}(:,1));
+plot(dividedSampleArray{i}(:,1)-startTime,dividedSampleArray{i}(:,2));
 hold on
-Event50 = (DividedEventfile{i}(:,2) == 50);
-plot(DividedEventfile{i}(Event50,1)-startTime,DividedEventfile{i}(Event50,2),'.k');
-plot(DividedEventfile{i}(~Event50,1)-startTime,DividedEventfile{i}(~Event50,2),'.r');
+stimOnEvents = (dividedEventfile{i}(:,2) == STIM_ON);
+plot(dividedEventfile{i}(stimOnEvents,1)-startTime,dividedEventfile{i}(stimOnEvents,2),'.k');
+plot(dividedEventfile{i}(~stimOnEvents,1)-startTime,dividedEventfile{i}(~stimOnEvents,2),'.r');
 xlim([1,1000000]);
+xlabel('Time in ys','fontsize',16);
+ylabel('Signal in yV','fontsize',16);
 hold off
 
 
