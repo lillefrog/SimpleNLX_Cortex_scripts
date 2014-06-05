@@ -1,0 +1,70 @@
+// Calibration program for testing response time of monitor
+
+
+#include "css_inc.h"
+
+
+/********************************************/
+/****  Function Declarations             ****/
+/********************************************/
+
+#define START_EVENT           50 //
+#define STOP_EVENT           51 //
+
+//################################################################################
+main()
+{
+	int error_flag;
+	error_flag = 0;
+	
+	encode(START_PRE_TRIAL);	
+	Gon_off(TEST1, OFF);
+	Gon_off(FIXSPOT, OFF);
+	Gflush(1);
+    clear_eog();
+	encode(END_PRE_TRIAL);
+
+
+	
+
+    put_epp_data_in_buf(1);
+	
+	for (i=0;i<=30;i++)
+	{
+		Gon_off(TEST1, ON);
+		encode(define START_EVENT);
+		Gflush(1);		
+				
+		MS_TIMERset(1, 50);
+		while (MS_TIMERcheck(1) > 0)	
+		{
+			if (get_bar_state() == 1)
+			{
+				error_flag = 1;
+				break;
+			}
+		}
+				
+		Gon_off(TEST1, OFF);
+		encode(define STOP_EVENT);
+		Gflush(1);	
+		
+		MS_TIMERset(1, 50);
+		while (MS_TIMERcheck(1) > 0)	
+		{
+			if (get_bar_state() == 1)
+			{
+				error_flag = 1;
+				break;
+			}
+		}
+	}	
+		
+    put_epp_data_in_buf(OFF);
+		
+	response_correct(0);
+	encode(REWARD);
+	Gpurge();
+	Gon_off(TEST1, OFF);
+	Gflush(1);
+}

@@ -15,6 +15,7 @@ addpath(genpath('H:\GitHub\NeuralynxAnalysis\'));
 %% TFT monitor setup
 FName = 'C:\Dropbox\temp\TFT_2014-05-23_17-52-13\Events.Nev';
 FName2 = 'C:\Dropbox\temp\TFT_2014-05-23_17-52-13\LFP1.ncs';
+THRESHOLD = 1000; % threshold depends on the recording settings
 timeBins = 27:0.4:62;
 displayLimits = [40,65];
 monitorName = 'TFT monitor';
@@ -22,9 +23,35 @@ monitorName = 'TFT monitor';
 %% CRT monitor setup
 FName = 'C:\Dropbox\temp\CRT_2014-05-23_17-37-02\Events.Nev';
 FName2 = 'C:\Dropbox\temp\CRT_2014-05-23_17-37-02\LFP1.ncs';
+THRESHOLD = 1000; % threshold depends on the recording settings
 timeBins = 10:0.001:11;
 displayLimits = [10.4,11];
 monitorName = 'CRT monitor';
+
+%% monitor setup 2
+FName = 'E:\CRT Center 2014-06-04_18-35-38\Events.Nev';
+FName2 = 'E:\CRT Center 2014-06-04_18-35-38\LFP1.ncs';
+THRESHOLD = -500; % threshold depends on the recording settings
+timeBins = 4.4:0.001:5.5;
+displayLimits = [4.4,6];
+monitorName = 'CRT monitor Center';
+
+%% monitor setup 2
+FName = 'E:\CRT Top Left 2014-06-04_18-42-38\Events.Nev';
+FName2 = 'E:\CRT Top Left 2014-06-04_18-42-38\LFP1.ncs';
+THRESHOLD = -500; % threshold depends on the recording settings
+timeBins = 0.4:0.001:1.0;
+displayLimits = [0.4,1.5];
+monitorName = 'CRT monitor Top Left';
+
+
+%% monitor setup 2
+FName = 'E:\CRT Bottom Right 2014-06-04_18-47-30\Events.Nev';
+FName2 = 'E:\CRT Bottom Right 2014-06-04_18-47-30\LFP1.ncs';
+THRESHOLD = -500; % threshold depends on the recording settings
+timeBins = 12.2:0.001:14;
+displayLimits = [12.2,14];
+monitorName = 'CRT monitor Bottom Right';
 
 %% Read the files and extract the data
 [AutomaticEvents,ManualEvents] = NLX_ReadEventFile(FName);
@@ -54,7 +81,7 @@ for TRIAL = 1:length(DividedEventfile)
     stopTime = startTime + 100000;
     withinTime = (sampleArray(:,1)>startTime) & (sampleArray(:,1)<stopTime);
     samplesOfInterest = sampleArray(withinTime,:);
-    IsAboveTreshold = (samplesOfInterest(:,2)>10000);
+    IsAboveTreshold = (samplesOfInterest(:,2)<THRESHOLD);
     index = find( IsAboveTreshold ,1, 'first' );
     CrossingTime = samplesOfInterest(index,1);
     delay(z) = CrossingTime - startTime;
@@ -72,9 +99,10 @@ disp(['Min delay ',num2str(min(delayMs)),' Max delay ',num2str(max(delayMs))]);
 
 hist(delayMs,timeBins);
 
-title(['Delay from on event to screen on ',monitorName]);
-xlabel('Delay in ms');
-ylabel('Number of occurrences');
+title(['Delay from on event to screen on ',monitorName],'fontsize',16);
+xlabel('Delay in ms','fontsize',16);
+ylabel('Number of occurrences','fontsize',16);
+set(gca,'FontSize',14)
 xlim(displayLimits);
 
 
